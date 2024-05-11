@@ -12,57 +12,61 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
  
 const App = () => {
-  // Estados para los datos del alumno y la lista de alumnos
+  // Estados para el nombre del cliente, fecha de reserva, lista de clientes, y visibilidad del modal
   const [nombre, setNombre] = useState('');
-  const [carnet, setCarnet] = useState('');
-  const [materiaFavorita, setMateriaFavorita] = useState('');
-  const [fechaNacimiento, setFechaNacimiento] = useState(new Date());
-  const [alumnos, setAlumnos] = useState([]);
+  const [fechaReserva, setFechaReserva] = useState(new Date());
+  const [cantidadP, setCantidadP] = useState('');
+  const [clientes, setClientes] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
  
-  // Estados para el DateTimePicker
+  // Estados para el datetimepicker
   const [date, setDate] = useState(new Date());
   const [mode, setMode] = useState('date');
   const [show, setShow] = useState(false);
  
-  // Función para manejar el cambio de fecha
+  // Función para cambiar la fecha seleccionada en el datetimepicker
   const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    setShow(false);
-    setFechaNacimiento(currentDate);
+    const currentDate = selectedDate || date; // Si no se selecciona ninguna fecha, se mantiene la actual
+    setShow(false); // Oculta el datetimepicker
+    setFechaReserva(currentDate); // Establece la fecha de reserva seleccionada en el estado
   };
  
-  // Mostrar el picker de fecha
+  // Función para mostrar el datetimepicker con el modo especificado (date o time)
+  const showMode = (currentMode) => {
+    setShow(true); // Muestra el datetimepicker
+    setMode(currentMode); // Establece el modo del datetimepicker
+  };
+ 
+  // Función para mostrar el datetimepicker en modo fecha
   const showDatepicker = () => {
-    setShow(true);
-    setMode('date');
+    showMode('date');
   };
  
-  // Función para agregar un alumno
-  const agregarAlumno = () => {
-    const nuevoAlumno = {
-      id: alumnos.length + 1,
-      nombre,
-      carnet,
-      materiaFavorita,
-      fechaNacimiento
-    };
-    setAlumnos([...alumnos, nuevoAlumno]);
+  // Función para agregar un nuevo cliente
+  const agregarCliente = () => {
+    // Genera un nuevo cliente con un ID único (incrementa el último ID generado)
+    const nuevoCliente = { id: clientes.length + 1, nombre: nombre, fechaReserva: fechaReserva, cantidadP: cantidadP };
+    // Agrega el nuevo cliente a la lista de clientes
+    setClientes([...clientes, nuevoCliente]);
+    // Limpia los campos de entrada
     setNombre('');
-    setCarnet('');
-    setMateriaFavorita('');
-    setFechaNacimiento(new Date());
+    setCantidadP('');
+    setFechaReserva(new Date());
+    // Oculta el modal de agregar cliente
     setModalVisible(false);
   };
  
-  // Función para eliminar un alumno
-  const eliminarAlumno = (id) => {
-setAlumnos(alumnos.filter(alumno => alumno.id !== id));
+  // Función para eliminar un cliente
+  const eliminarCliente = (id) => {
+    // Filtra la lista de clientes para excluir el cliente con el ID dado
+    setClientes(clientes.filter((cliente) => cliente.id !== id));
   };
  
   return (
     <View style={styles.container}>
-      <Button title="Agregar Alumno" onPress={() => setModalVisible(true)} />
+      {/* Botón para abrir el modal de agregar cliente */}
+      <Button title="Agregar Cliente" onPress={() => setModalVisible(true)} />
+      {/* Modal de agregar cliente */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -73,37 +77,38 @@ setAlumnos(alumnos.filter(alumno => alumno.id !== id));
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
+            {/* Campo de entrada para el nombre del cliente */}
             <TextInput
               style={styles.input}
-              placeholder="Nombre del Alumno"
+              placeholder="Nombre del Cliente"
               value={nombre}
               onChangeText={setNombre}
             />
             <TextInput
               style={styles.input}
-              placeholder="Carnet"
-              value={carnet}
-              onChangeText={setCarnet}
+              placeholder="Cantidad de personas"
+              value={cantidadP}
+              onChangeText={setCantidadP}
             />
-            <TextInput
-              style={styles.input}
-              placeholder="Materia Favorita"
-              value={materiaFavorita}
-              onChangeText={setMateriaFavorita}
-            />
-            <TouchableOpacity onPress={showDatepicker}><Text style={styles.Fecha}>Fecha de Nacimiento</Text></TouchableOpacity>
-            <Text>Seleccionada: {fechaNacimiento.toLocaleDateString()}</Text>
+ 
+            {/* Botón para mostrar el datetimepicker */}
+            <TouchableOpacity onPress={showDatepicker}><Text style={styles.Fecha}>Seleccionar fecha de Reserva</Text></TouchableOpacity>
+            {/* Muestra la fecha seleccionada */}
+            <Text>selected: {fechaReserva.toLocaleString()}</Text>
+            {/* Muestra el datetimepicker si la variable show es verdadera */}
             {show && (
               <DateTimePicker
                 testID="dateTimePicker"
                 value={date}
                 mode={mode}
-                is24Hour={true}
+                is24Hour={false}
                 onChange={onChange}
-                locale='es-ES'
+                locale='es-ES' // Establece el idioma del datetimepicker a español
               />
             )}
-            <Button title="Agregar Alumno" onPress={agregarAlumno} />
+            {/* Botón para agregar el cliente */}
+            <Button title="Agregar Cliente" onPress={agregarCliente} />
+            {/* Botón para cancelar y cerrar el modal */}
             <Button
               title="Cancelar"
               onPress={() => setModalVisible(false)}
@@ -112,23 +117,41 @@ setAlumnos(alumnos.filter(alumno => alumno.id !== id));
           </View>
         </View>
       </Modal>
+      {/* Lista de clientes */}
       <FlatList
-        data={alumnos}
+        data={clientes}
         renderItem={({ item }) => (
-          <View style={styles.alumnoItem}>
-            <Text style={styles.alumnoNombre}>{item.nombre} - {item.carnet}</Text>
-            <Text>Materia Favorita: {item.materiaFavorita}</Text>
-            <Text>Fecha de Nacimiento: {item.fechaNacimiento.toDateString()}</Text>
+          <View style={styles.clienteItem}>
+            {/* Información del cliente */}
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              onPress={() => {
+                // Aquí puede ir alguna otra acción como mostrar detalles del cliente
+                console.log('Detalles del cliente', item);
+              }}
+            >
+              <Text style={styles.clienteNombre}>{item.id}</Text>
+              <Text style={styles.clienteNombre}>{item.nombre}</Text>
+              <Text style={styles.clienteCantidad}>
+                Cantidad de personas: {item.cantidadP}
+              </Text>
+              <Text style={styles.clienteFecha}>
+                Fecha de Reserva: {item.fechaReserva.toDateString()}
+              </Text>
+            </TouchableOpacity>
+ 
+            {/* Botón para eliminar cliente */}
             <TouchableOpacity
               style={styles.botonEliminar}
-onPress={() => eliminarAlumno(item.id)}
+              onPress={() => eliminarCliente(item.id)} x
             >
               <Text style={styles.textoBotonEliminar}>Eliminar</Text>
             </TouchableOpacity>
           </View>
         )}
-keyExtractor={item => item.id.toString()}
+        keyExtractor={(item) => item.id.toString()}
       />
+ 
     </View>
   );
 };
@@ -136,7 +159,7 @@ keyExtractor={item => item.id.toString()}
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#001222',
     padding: 20,
   },
   modalContainer: {
@@ -158,15 +181,23 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingHorizontal: 10,
   },
-  alumnoItem: {
+  clienteItem: {
     backgroundColor: '#FFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
-  alumnoNombre: {
+  clienteNombre: {
     fontSize: 18,
     color: '#333',
+  },
+  clienteFecha: {
+    fontSize: 16,
+    padding: 5,
+    color: '#666',
   },
   botonEliminar: {
     padding: 10,
@@ -182,6 +213,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0085E1',
   }
+ 
 });
  
 export default App;
+ 
